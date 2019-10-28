@@ -12,7 +12,7 @@ sess = tf.InteractiveSession(graph=tf.Graph())
 
 
 def get_competition_dict():
-    file_path = "ILSVRC2015_devkit/data/map_clsloc.txt"
+    file_path = "dicts/map_clsloc.txt"
     d = dict()
     with open(file_path, 'r') as file:
         for i_line, line in enumerate(file.readlines()):
@@ -26,7 +26,7 @@ def get_competition_dict():
 
 
 def get_vgg_dict():
-    file_path = "synset.txt"
+    file_path = "dicts/synset.txt"
     d = dict()
     with open(file_path, 'r') as file:
         for i_line, line in enumerate(file.readlines()):
@@ -48,6 +48,15 @@ def resize_img(img, target_imsz=(224, 224), order=1):
 
 
 def crop_and_resize_img(img, target_imsz=(224, 224)):
+    """ Crop and resize `img` to match `target_imsz`.
+
+    Images are cropped to be square images.
+
+    :param img: the input image
+    :param target_imsz: the target image size
+    :return img: the resized image
+    :return crop: the applied crop
+    """
     img_new = img
     if len(img.shape) == 2:
         img_new = img_new[:, :, np.newaxis]
@@ -113,6 +122,12 @@ def pad_and_resize_cam(cam, target_imsz, crop, order, mode="zero"):
 
 
 def get_rectangle(bbox, color='r'):
+    """ Get a rectangle patch from `bbox` for plotting purposes.
+
+    :param bbox: input bounding box
+    :param color: rectangle color
+    :return rect: a colored rectangle patch
+    """
     # Create a Rectangle patch
     (xmin, xmax, ymin, ymax) = bbox
     rect = patches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor=color, facecolor="none")
@@ -124,6 +139,11 @@ def order_bbox_from_sk(bbox):
 
 
 def get_bbox_from_gt(gt_root):
+    """ Get the all the supervised bounding boxes (ground truth) having `gt_root` as root folder.
+
+    :param gt_root: root folder for the ground truth bounding boxes
+    :return all_objs: all supervised bounding boxes
+    """
     all_objs = dict()
 
     all_objs_elem = gt_root.findall("./object")
@@ -145,6 +165,14 @@ def get_bbox_from_gt(gt_root):
 
 
 def get_bbox_from_cam(cam_full, thresh_rel=0.15):
+    """ Compute the bounding box from `cam_full` according to `thresh_rel`.
+
+    Fit a box around `cam_full` where its values are greater than the 15% of its maximum.
+
+    :param cam_full: the input CAM
+    :param thresh_rel: the threshold values (same as in https://arxiv.org/abs/1610.02391)
+    :return: the bounding box for `cam_full`
+    """
     thresh = thresh_rel * np.max(cam_full)
     mask = cam_full > thresh
 
@@ -163,6 +191,12 @@ def get_bbox_from_cam(cam_full, thresh_rel=0.15):
     return order_bbox_from_sk(bbox)
 
 def bb_intersection_over_union(boxA, boxB):
+    """ Compute the intersection over union (IOU) metrics between two bounding boxes.
+
+    :param boxA: bounding box 1
+    :param boxB: bounding box 2
+    :return iou: the intersection over union of `boxA` and `boxB`
+    """
     # determine the (x, y)-coordinates of the intersection rectangle
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[2], boxB[2])
@@ -211,8 +245,8 @@ class GradCamModel:
             tns_input = None
             ValueError("Model {} not supported".format(model_name))
 
+        # input index for the target class
         tns_index = tf.placeholder("int32", [None])
-        # input index
         self.tns_index = tns_index
 
         model.build(tns_input)
@@ -244,6 +278,11 @@ class GradCamModel:
         self.tns_top_k_cam = tns_top_k_cam
 
     def preprocess_input(self, image_batch):
+        """ Pre-process `image_batch` to meet the specifications of the loaded model.
+
+        :param image_batch: the input images
+        :return all_img_pre: the pre-processed input images
+        """
         if self.model_name == "vgg16":
             all_img_pre = [keras.applications.vgg16.preprocess_input(image.copy())[np.newaxis, :, :, :] for image in image_batch]
         elif self.model_name == "resnet50":
@@ -253,12 +292,23 @@ class GradCamModel:
         return all_img_pre
 
     def compute_full_prob(self, image_batch):
+        """ Classify the images and return the probability values over the considered label space.
+
+        :param image_batch: the input images
+        :return full_prob: the probailities values for the predicted classes
+        """
         all_img_pre = self.preprocess_input(image_batch)
         img_batch = np.concatenate(all_img_pre, 0)
         full_prob = sess.run(self.tns_full_prob, feed_dict={self.tns_input: img_batch})
         return full_prob
 
     def compute_cam(self, image_batch, index_batch):
+        """ Compute the CAMs for `image_batch` w.r.t. to the class referenced by `index_batch`
+
+        :param image_batch: the input images for the CAM algorithm
+        :param index_batch: the indicies corresponding to the desired class
+        :return cam: the CAMs
+        """
         all_img_pre = self.preprocess_input(image_batch)
         if len(all_img_pre) == 1:
             img_batch = all_img_pre[0]
@@ -270,6 +320,13 @@ class GradCamModel:
         return cam.squeeze()
 
     def compute_top_k_cams(self, image_batch):
+        """ Compute the CAMs corresponding to the `top_k` predicted classes.
+
+        :param image_batch: input images
+        :return top_k_cams: the CAMs images for the first k classes
+        :return top_k_preds: the indices of the first k predicted classes
+        :return top_k_probs: the probabilities values for the first k predicted classes
+        """
         all_img_pre = self.preprocess_input(image_batch)
         all_img_pre = np.concatenate(all_img_pre, 0)
 
@@ -300,6 +357,13 @@ class Augmenter:
         self.tns_inverse_img_batch = tf.contrib.image.rotate(tns_shift_img_batch, self.tns_angle, interpolation="BILINEAR")
 
     def direct_augment(self, img, angles, shift):
+        """ Apply rotation and shift to `img` according to the values in `angles` and `shift`.
+
+        :param img: the input image
+        :param angles: the magnitude of the rotation in radians
+        :param shift: the magnitude of the shift
+        :return img_aug: the transformed image
+        """
         feed_dict = {self.tns_input_img: img[np.newaxis, :, :, :],
                      self.tns_angle: angles,
                      self.tns_shift: shift,
@@ -309,6 +373,13 @@ class Augmenter:
         return img_aug
 
     def inverse_augment(self, img_batch, angles, shift):
+        """ Apply the inverse rotation and shift to `img_batch` according to the values in `angles` and `shift`.
+
+        :param img_batch: a set of images to be anti-transformed
+        :param angles: the magnitude of the rotatation in radians
+        :param shift: the magnitude of the shift
+        :return img_aug: the anti-transformed image
+        """
         feed_dict = {self.tns_img_batch: img_batch,
                      self.tns_angle: -np.array(angles),
                      self.tns_shift: -np.array(shift),
@@ -320,36 +391,48 @@ class Augmenter:
 
 class Superresolution:
 
-    def __init__(self, augmenter, learning_rate=0.001, camsz=(14,14)):
+    def __init__(self, augmenter, learning_rate=0.001, camsz=(14, 14)):
         num_aug = augmenter.num_aug
         self.augmenter = augmenter
         augcamsz = self.augmenter.augcamsz
 
-        # tensors for loss functional
+        # placeholder tensor for the batch of CAMs resulting from augmentation
         self.tns_cam_aug= tf.placeholder("float", [num_aug, camsz[0], camsz[1], 1])
+        # placeholder tensors for the regularization coefficients
         self.tns_lmbda_eng = tf.placeholder("float", [1], name="lambda_eng")
         self.tns_lmbda_tv = tf.placeholder("float", [1], name="lambda_tv")
+        # variable tensor for the target upsampled CAM
         self.tns_cam_full = tf.Variable(tf.zeros([1, augcamsz[0], augcamsz[1], 1]), name="cam_full")
-
-        tns_rot_cam = tf.contrib.image.rotate(tf.tile(self.tns_cam_full, [num_aug, 1, 1, 1]), augmenter.tns_angle, interpolation="BILINEAR")
+        # augmentation parameters tensors
+        tns_rot_cam = tf.contrib.image.rotate(tf.tile(self.tns_cam_full, [num_aug, 1, 1, 1]),
+                                              augmenter.tns_angle,
+                                              interpolation="BILINEAR")
         tns_aug = tf.contrib.image.translate(tns_rot_cam, augmenter.tns_shift, interpolation="BILINEAR")
+        # tensor for the downsampling operator
         tns_Dv = tf.expand_dims(tf.image.resize(tns_aug, camsz, name="downsampling"), 0)
+        # tensor for the gradient term
         tns_gradv = tf.image.image_gradients(self.tns_cam_full)
 
+        # tensors for the functional terms
         tns_df = tf.reduce_sum(tf.squared_difference(tns_Dv, self.tns_cam_aug), name="data_fidelity")
         tns_tv = tf.reduce_sum(tf.add(tf.abs(tns_gradv[0]), tf.abs(tns_gradv[1])))
         tns_norm = tf.reduce_sum(tf.square(self.tns_cam_full))
+
         # loss definition
         self.tns_functional_tv = tf.add(tns_df, tf.scalar_mul(self.tns_lmbda_tv[0], tns_tv), name="loss_en_grad")
         self.tns_functional_mixed = tf.add(tf.scalar_mul(self.tns_lmbda_eng[0], tns_norm), self.tns_functional_tv)
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate)
         self.minimizer_mixed = self.optimizer.minimize(self.tns_functional_mixed)
-        self.tns_super_single = tf.image.resize(self.tns_cam_aug[0], augcamsz)
+        self.tns_super_single = tf.image.resize(self.tns_cam_aug[0], augcamsz) # first CAM is the non-augmented one
 
         tns_img_batch = tf.image.resize(self.tns_cam_aug, augcamsz)
-        tns_shift_img_batch=tf.contrib.image.translate(tns_img_batch, self.augmenter.tns_shift, interpolation="BILINEAR")
-        self.tns_inverse_img_batch = tf.contrib.image.rotate(tns_shift_img_batch, self.augmenter.tns_angle, interpolation="BILINEAR")
+        tns_shift_img_batch = tf.contrib.image.translate(tns_img_batch,
+                                                         self.augmenter.tns_shift,
+                                                         interpolation="BILINEAR")
+        self.tns_inverse_img_batch = tf.contrib.image.rotate(tns_shift_img_batch,
+                                                             self.augmenter.tns_angle,
+                                                             interpolation="BILINEAR")
         self.tns_max_aggr = tf.reduce_max(self.tns_inverse_img_batch, axis=0)
         self.tns_avg_aggr = tf.reduce_mean(self.tns_inverse_img_batch, axis=0)
 
@@ -362,6 +445,16 @@ class Superresolution:
 
 
     def super_mixed(self, cams, angles, shift, lmbda_tv, lmbda_eng, niter=200):
+        """ Compute the CAM solving the super resolution problem.
+
+        :param cams: batch of CAMs
+        :param angles: rotation values used to compute each CAM in `cams`
+        :param shift: shift values used to compute each CAM in `cams`
+        :param lmbda_tv: coefficient promoting the total variation
+        :param lmbda_eng: coefficient promoting the energy of the gradient
+        :param niter: number of iterations of the gradient descent
+        :return cam_full_aug: the upsampled CAM resluting from super resolution aggregation
+        """
         feed_dict = {self.tns_cam_aug: cams[:, :, :],
                      self.augmenter.tns_angle: angles,
                      self.augmenter.tns_shift: shift,
@@ -378,10 +471,26 @@ class Superresolution:
         return cam_full_aug
 
     def super_single(self, cams):
+        """ Compute the upsampled CAM with no aggregation.
+
+        The first CAM in `cams` is the CAM with no augmentation
+
+        :param cams: batch of CAMs
+        :return cam_full: the upsampled CAM
+        """
         cam_full = sess.run(self.tns_super_single, feed_dict={self.tns_cam_aug: cams})
         return cam_full
 
     def super_max(self, cams, angles, shift):
+        """ Aggregation of `cams` using the max operator.
+
+        CAMs are registered here, applying the anti-transformation using `angles` and `shift`
+
+        :param cams: batch of CAMs
+        :param angles: rotation values used to compute each CAM in `cams`
+        :param shift: shift values used to compute each CAM in `cams`
+        :return cam_full_aug: the upsampled CAM resulting from applying the max operator to the registered CAMs
+        """
         feed_dict = {self.tns_cam_aug: cams[:, :, :],
                      self.augmenter.tns_angle: -angles,
                      self.augmenter.tns_shift: -shift
@@ -391,6 +500,15 @@ class Superresolution:
         return cam_full_aug
 
     def super_avg(self, cams, angles, shift):
+        """ Aggregation of `cams` using the mean operator.
+
+        CAMs are registered here, applying the anti-transformation using `angles` and `shift`
+
+        :param cams: batch of CAMs
+        :param angles: rotation values used to compute each CAM in `cams`
+        :param shift: shift values used to compute each CAM in `cams`
+        :return cam_full_aug: the upsampled CAM resulting from averaging the registered CAMs
+        """
         feed_dict = {self.tns_cam_aug: cams[:, :, :],
                      self.augmenter.tns_angle: -angles,
                      self.augmenter.tns_shift: -shift
@@ -400,7 +518,7 @@ class Superresolution:
         return cam_full_aug
 
 
-    def overlay(self, cam, img, th=28, name=None):
+    def overlay(self, cam, img, th=27, name=None):
         """ Overlay `cam` to `img`.
 
         The overlay of `cam` to `img` is done cutting away regions in `cam` below `th` for better visualization.
@@ -409,7 +527,7 @@ class Superresolution:
         :param img: the test image
         :param th: threshold for regions cut away from `cam`
         :param name: optional output filename
-        :return: the heatmap superimposed to `img`
+        :return o: the heatmap superimposed to `img`
         """
         # rotate color channels according to cv2
         background = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
