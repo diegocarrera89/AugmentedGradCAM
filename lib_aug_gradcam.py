@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.patches as patches
 import numpy as np
+from skimage.filters import threshold_otsu as otsu
 import skimage.io
 import skimage.transform
 import skimage.measure
@@ -189,6 +190,29 @@ def get_bbox_from_cam(cam_full, thresh_rel=0.15):
     bbox = region.bbox
 
     return order_bbox_from_sk(bbox)
+
+
+def get_bbox_str(all_cam_full, top_k_preds, thresh_rel=0.15):
+    """
+
+    :param all_cam_full:
+    :param top_k_preds:
+    :return:
+    """
+    dict_vgg = get_vgg_dict()
+    dict_comp = get_competition_dict()
+
+    bbox_str = ''
+    top_n = top_k_preds.shape[0]
+    for k in range(top_n):
+        cam_full = all_cam_full[k]
+        thresh = otsu(cam_full)
+        bbox = get_bbox_from_cam(cam_full, thresh)
+        (xmin, xmax, ymin, ymax) = bbox
+
+        id = dict_comp[dict_vgg[top_k_preds[k]][0]][0]
+        bbox_str = bbox_str + ('{} {} {} {} {} '.format(id, xmin + 1, ymin + 1, xmax + 1, ymax + 1))
+    return bbox_str
 
 def bb_intersection_over_union(boxA, boxB):
     """ Compute the intersection over union (IOU) metrics between two bounding boxes.

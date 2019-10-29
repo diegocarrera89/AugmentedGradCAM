@@ -6,7 +6,7 @@ import lib_aug_gradcam as auggc
 
 # test image name
 img_name = "cat_dog.png"
-idx = 242 # index for the true dog true class
+idx = 242  # index for the true dog true class
 
 # load the test image
 img_path = "./imgs/{}".format(img_name)
@@ -35,7 +35,7 @@ augmenter = auggc.Augmenter(num_aug, (224, 224))
 superreso = auggc.Superresolution(augmenter=augmenter, learning_rate=learning_rate, camsz=[14,14])
 
 
-gradcam_model = auggc.GradCamModel(model_name='vgg16')
+gradcam_model = auggc.GradCamModel(model_name="vgg16")
 img_batch = augmenter.direct_augment(img, angles, shift)
 idx_batch = [idx for ii in range(num_aug)]
 
@@ -54,13 +54,13 @@ plt.figure()
 
 # single Grad-CAM
 plt.subplot(2, 2, 1)
-plt.imshow(cam_full_single, cmap='jet')
-plt.title('Single')
+plt.imshow(cam_full_single, cmap="jet")
+plt.title("Single")
 
 # max aggregation
 plt.subplot(2, 2, 2)
-plt.imshow(cam_full_max, cmap='jet')
-plt.title('Max')
+plt.imshow(cam_full_max, cmap="jet")
+plt.title("Max")
 
 # average aggregation
 plt.subplot(2, 2, 3)
@@ -70,7 +70,7 @@ plt.title("Avg")
 # super resolution aggregation
 plt.subplot(2, 2, 4)
 plt.imshow(cam_full_tv, cmap='jet')
-plt.title('Augmented')
+plt.title("Augmented")
 
 plt.show()
 
