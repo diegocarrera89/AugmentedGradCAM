@@ -1,8 +1,0 @@
-.idea
-__pycache__
-script_all_baseline.py
-script_generate_gradcam.py
-sub_single.txt
-sub_max.txt
-sub_avg.txt
-sub_tv.txt
