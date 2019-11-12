@@ -6,7 +6,7 @@ import lib_aug_gradcam as auggc
 
 # test image name
 img_name = "cat_dog.png"
-idx = 242  # index for the true dog true class
+idx = 243  # index for the true dog true class
 
 # load the test image
 img_path = "./imgs/{}".format(img_name)
@@ -99,6 +99,7 @@ ax.add_patch(rect_max)
 ax.add_patch(rect_avg)
 ax.add_patch(rect_tv)
 ax.legend((rect_single, rect_max, rect_avg, rect_tv), ("Single", "Max", "Avg", "Augmented"))
+
 plt.show()
 
 
