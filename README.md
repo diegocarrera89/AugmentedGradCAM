@@ -11,7 +11,7 @@ python test.py
 ```
 
 ## Usage
-To reproduce experiments on the [ImageNet validation set](http://image-net.org/challenges/LSVRC/2015/index#resources), download it and add its directory path in `generate_all_gradcam.py` script. Make sure your directory tree look as follows
+To reproduce experiments on the [ImageNet validation set](http://image-net.org/challenges/LSVRC/2015/index#resources), download it and add its directory path in `generate_all_gradcam.py` script. Make sure your directory tree looks as follows
 ```
 .
 ├── data
@@ -30,9 +30,8 @@ To reproduce experiments on the [ImageNet validation set](http://image-net.org/c
 │   └── single.png
 ├── lib_aug_gradcam.py
 └── test.py
-
 ```
-Then launch
+Then, launch
 ```
 python generate_all_gradcam.py
 python generate_submission_files.py
