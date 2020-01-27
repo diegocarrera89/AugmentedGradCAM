@@ -17,9 +17,9 @@ Your directory tree should now look as follows
 .
 ├── camTfEnv
 ├── config
-    └── requirements.txt
+│   └── requirements.txt
 ├── data
-    └── cams_vgg16
+│   └── cams_vgg16
 ├── dicts
 │   ├── map_clsloc.txt
 │   └── synset.txt
