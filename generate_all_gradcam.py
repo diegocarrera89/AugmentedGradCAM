@@ -5,7 +5,7 @@ import pathlib
 import lib_aug_gradcam as auggc
 
 
-model_name = "vgg16"  # or "resnet50"
+model_name = "vgg16"
 do_crop_resize = True
 batch_size = 1000
 top_n = 5
@@ -60,7 +60,7 @@ for ii, filepath in enumerate(all_files):
 
     if np.mod(ii+1, batch_size) == 0:
         cnt_batch = cnt_batch + 1
-        filename = "data/cams_{}/batch_{}".format(model_name, cnt_batch)
+        filename = "data/cams/batch_{}".format(cnt_batch)
         np.savez(filename,
                  cams=batch_cams,
                  preds=batch_preds,
