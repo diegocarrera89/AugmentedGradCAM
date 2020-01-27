@@ -1,7 +1,6 @@
 import cv2
 import matplotlib.patches as patches
 import numpy as np
-from skimage.filters import threshold_otsu as otsu
 import skimage.io
 import skimage.transform
 import skimage.measure
@@ -206,8 +205,7 @@ def get_bbox_str(all_cam_full, top_k_preds, thresh_rel=0.15):
     top_n = top_k_preds.shape[0]
     for k in range(top_n):
         cam_full = all_cam_full[k]
-        thresh = otsu(cam_full)
-        bbox = get_bbox_from_cam(cam_full, thresh)
+        bbox = get_bbox_from_cam(cam_full, thresh_rel)
         (xmin, xmax, ymin, ymax) = bbox
 
         id = dict_comp[dict_vgg[top_k_preds[k]][0]][0]
