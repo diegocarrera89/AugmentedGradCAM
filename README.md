@@ -19,7 +19,7 @@ Your directory tree should now look as follows
 ├── config
     └── requirements.txt
 ├── data
-    └── cams
+    └── cams_vgg16
 ├── dicts
 │   ├── map_clsloc.txt
 │   └── synset.txt
