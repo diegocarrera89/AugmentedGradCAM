@@ -32,7 +32,7 @@ Your directory tree should now look as follows
 │   ├── max.png
 │   └── single.png
 ├── lib_aug_gradcam.py
-└── submissions
+├── submissions
 └── test.py
 ```
 
