@@ -4,19 +4,22 @@
 
 Python code to reproduce the experiments of Augmented Grad-CAM.
 
-## Examples
-To reproduce the above images, simply launch the following command within the cloned repository
-```
-python test.py
-```
+## Configuration
+To reproduce experiments on the [ImageNet validation set](http://image-net.org/challenges/LSVRC/2015/index#resources), download it and add its directory path in the `generate_all_gradcam.py` script. In order to satisfy code dependencies, we suggest to configure a virtual environment using `virtualenv` and install the required modules, specified in `config/requirements.txt`.
 
-## Usage
-To reproduce experiments on the [ImageNet validation set](http://image-net.org/challenges/LSVRC/2015/index#resources), download it and add its directory path in `generate_all_gradcam.py` script. Make sure your directory tree looks as follows
+First, create the virtual environment in the root directory
+```
+virtualenv -p python3 camTfEnv
+```
+Your directory tree should now look as follows
+
 ```
 .
+├── camTfEnv
+├── config
+    └── requirements.txt
 ├── data
-│   ├── cams_resnet50
-│   └── cams_vgg16
+    └── cams
 ├── dicts
 │   ├── map_clsloc.txt
 │   └── synset.txt
@@ -31,11 +34,37 @@ To reproduce experiments on the [ImageNet validation set](http://image-net.org/c
 ├── lib_aug_gradcam.py
 └── test.py
 ```
-Then, launch
+
+Then, activate the new virtual environment
+```
+source camTfEnv/bin/activate
+```
+
+And install the required modules
+```
+pip install -r config/requirements.txt
+```
+
+## Evaluation: Weak Localization
+Finally, we compute the Grad-CAMs over the images contained in `data`, using
 ```
 python generate_all_gradcam.py
+```
+
+Grad-CAMs are stored in batches as `.npz` files inside `data/cams`. 
+Then, we compute the bounding boxes for weak localization over the generated Grad-CAMs using
+```
 python generate_submission_files.py
 ```
 
+This generates a `.txt` file the directory root reporting for each image in `data`, the corresponding classification and the vertices of the corresponding bounding box.
+
+## Examples
+To reproduce the images in the heading of this repository, activate the virtual environment and launch the following script
+```
+source camTfEnv/bin/activate
+python test.py
+```
+
  ### Notes
- In the ImageNet experiments scripts, we decouple Grad-CAMs generation and aggregation due to the large size of the validation set. Moreover, we process images in batches to avoid memory saturation.
+ In the ImageNet experiments scripts, we decouple Grad-CAMs computation and aggregation (via `tensorflow`) due to the large size of the validation set. Moreover, we process images in batches to avoid memory saturation.
