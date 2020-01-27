@@ -60,7 +60,7 @@ for ii, filepath in enumerate(all_files):
 
     if np.mod(ii+1, batch_size) == 0:
         cnt_batch = cnt_batch + 1
-        filename = "data/cams/batch_{}".format(cnt_batch)
+        filename = "data/cams_{}/batch_{}".format(model_name, cnt_batch)
         np.savez(filename,
                  cams=batch_cams,
                  preds=batch_preds,
