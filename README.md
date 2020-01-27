@@ -32,6 +32,7 @@ Your directory tree should now look as follows
 │   ├── max.png
 │   └── single.png
 ├── lib_aug_gradcam.py
+└── submissions
 └── test.py
 ```
 
@@ -51,13 +52,13 @@ Finally, we compute the Grad-CAMs over the images contained in `data`, using
 python generate_all_gradcam.py
 ```
 
-Grad-CAMs are stored in batches as `.npz` files inside `data/cams`. 
+Grad-CAMs are computed using `tensorflow` and stored in batches as `.npz` files inside `data/cams`. 
 Then, we compute the bounding boxes for weak localization over the generated Grad-CAMs using
 ```
 python generate_submission_files.py
 ```
 
-This generates a `.txt` file the directory root reporting for each image in `data`, the corresponding classification and the vertices of the corresponding bounding box.
+This generates a submission file in the `submissions` directory for each aggregation approach we propose. For each image in `data`, a submission file reports the classification and the vertices of the corresponding bounding box. The files contained in `submissions` are must be fed to the `MATLAB` code provided at [ILSVRC2015 devkit](http://image-net.org/challenges/LSVRC/2015/index#resources) to compute the final `top-k` errors.
 
 ## Examples
 To reproduce the images in the heading of this repository, activate the virtual environment and launch the following script
@@ -67,4 +68,4 @@ python test.py
 ```
 
  ### Notes
- In the ImageNet experiments scripts, we decouple Grad-CAMs computation and aggregation (via `tensorflow`) due to the large size of the validation set. Moreover, we process images in batches to avoid memory saturation.
+ In the ImageNet experiments scripts, we decouple Grad-CAMs computation and aggregation due to the large size of the validation set. Moreover, we process images in batches to avoid memory saturation.
