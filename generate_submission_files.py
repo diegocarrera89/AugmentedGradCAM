@@ -23,10 +23,10 @@ augmenter = auggc.Augmenter(num_aug)
 superreso = auggc.Superresolution(augmenter)
 
 # submission files initialization
-subfile_single = open("sub_single.txt", 'w')
-subfile_max = open("sub_max.txt", 'w')
-subfile_avg = open("sub_avg.txt", 'w')
-subfile_tv = open("sub_tv.txt", 'w')
+subfile_single = open("submissions/sub_single.txt", 'w')
+subfile_max = open("submissions/sub_max.txt", 'w')
+subfile_avg = open("submissions/sub_avg.txt", 'w')
+subfile_tv = open("submissions/sub_tv.txt", 'w')
 
 for i_batch in range(nbatch):
     batch = np.load("data/cams_{0}/batch_{1:d}.npz".format(model_name, i_batch))
