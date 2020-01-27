@@ -58,7 +58,7 @@ Then, we compute the bounding boxes for weak localization over the generated Gra
 python generate_submission_files.py
 ```
 
-This generates a submission file in the `submissions` directory for each aggregation approach we propose. For each image in `data`, a submission file reports the classification and the vertices of the corresponding bounding box. The files contained in `submissions` are must be fed to the `MATLAB` code provided at [ILSVRC2015 devkit](http://image-net.org/challenges/LSVRC/2015/index#resources) to compute the final `top-k` errors.
+This generates a submission file in the `submissions` directory for each aggregation approach we propose. For each image in `data`, a submission file reports the classification and the vertices of the corresponding bounding box. The files contained in `submissions` are fed to the `MATLAB` code provided at [ILSVRC2015 devkit](http://image-net.org/challenges/LSVRC/2015/index#resources) to compute the final `top-k` errors.
 
 ## Examples
 To reproduce the images in the heading of this repository, activate the virtual environment and launch the following script
