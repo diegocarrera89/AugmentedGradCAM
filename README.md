@@ -69,3 +69,6 @@ python test.py
 
  ### Notes
  In the ImageNet experiments scripts, we decouple Grad-CAMs computation and aggregation due to the large size of the validation set. Moreover, we process images in batches to avoid memory saturation.
+ 
+## References
+[1] Morbidelli P, Carrera D, Rossi B, Fragneto P, Boracchi G. Augmented Grad-CAM: Heat-Maps Super Resolution Through Augmentation. IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) 2020.
